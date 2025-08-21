@@ -1,0 +1,7 @@
+ui_btn_speaking_timer_gauge.png
+size:256,256
+filter:Linear,Linear
+pma:true
+mic_gauge
+bounds:2,2,168,164
+offsets:0,2,168,168

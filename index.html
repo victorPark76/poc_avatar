@@ -1,13 +1,112 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+
+    <!-- 성능 최적화 메타 태그 -->
+    <meta
+      name="description"
+      content="POC Avatar - React 19 기반 아바타/캐릭터 시스템"
+    />
+    <meta name="theme-color" content="#1890ff" />
+
+    <!-- DNS 프리페치 -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+
+    <!-- 리소스 힌트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+
+    <!-- Critical CSS 인라인 -->
+    <style>
+      /* Critical CSS - 즉시 렌더링되는 스타일 */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background-color: #fff;
+        color: #333;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      /* 로딩 스피너 */
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1890ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+    </style>
+
+    <title>POC Avatar - React 19</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- 초기 로딩 스피너 -->
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 스크립트 최적화 -->
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- 성능 모니터링 (개발 환경에서만) -->
+    <script>
+      // 개발 환경에서만 성능 모니터링
+      if (
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1'
+      ) {
+        // DOM이 완전히 로드된 후 측정
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => {
+            if ('performance' in window) {
+              const perfData = performance.getEntriesByType('navigation')[0]
+              if (perfData) {
+                const loadTime = perfData.loadEventEnd - perfData.loadEventStart
+                const domTime =
+                  perfData.domContentLoadedEventEnd -
+                  perfData.domContentLoadedEventStart
+                const totalTime = perfData.loadEventEnd - perfData.fetchStart
+
+                console.log('📊 성능 측정 결과:')
+                console.log(
+                  '  - DOM Content Loaded:',
+                  domTime > 0 ? domTime.toFixed(2) + 'ms' : 'N/A'
+                )
+                console.log(
+                  '  - Page Load Time:',
+                  loadTime > 0 ? loadTime.toFixed(2) + 'ms' : 'N/A'
+                )
+                console.log(
+                  '  - Total Load Time:',
+                  totalTime > 0 ? totalTime.toFixed(2) + 'ms' : 'N/A'
+                )
+              }
+            }
+          }, 100) // 100ms 지연으로 정확한 측정
+        })
+      }
+    </script>
   </body>
 </html>

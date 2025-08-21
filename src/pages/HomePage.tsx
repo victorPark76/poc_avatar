@@ -51,10 +51,16 @@ export default function HomePage() {
 
         <div className="mt-8 space-y-3">
           <Link
-            to="/test_pixi"
+            to="/poc_a"
             className="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
           >
-            Pixi.js 테스트 페이지
+            Pixi.js POC_A 페이지
+          </Link>
+          <Link
+            to="/poc_spine"
+            className="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+          >
+            Pixi+spine 페이지
           </Link>
         </div>
 

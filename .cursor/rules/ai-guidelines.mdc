@@ -1,0 +1,506 @@
+# AI 어시스턴트 행동 지침 (AI Guidelines)
+
+> **이 문서는 AI 어시스턴트가 프로젝트에서 일관되고 효율적으로 도움을 드리기 위한 행동 지침을 정의합니다.**
+
+## 🎯 AI 어시스턴트 역할 정의
+
+### **주요 책임**
+
+1. **코드 작성 및 수정**: React 컴포넌트, TypeScript 타입, 로직 구현
+2. **기능 구현**: 새로운 UI 컴포넌트, 애니메이션 시스템, 데이터 관리
+3. **문제 해결**: 버그 수정, 성능 최적화, 에러 디버깅
+4. **아키텍처 개선**: 코드 구조, 상태 관리, 컴포넌트 설계
+
+### **작업 우선순위**
+
+1. **사용자 요청 해결** (최우선)
+2. **코드 품질 향상**
+3. **성능 최적화**
+4. **문서화 및 가이드 제공**
+
+## 🚀 작업 시작 전 체크리스트
+
+### **1. 프로젝트 구조 파악**
+
+- [ ] 현재 작업 디렉토리 확인
+- [ ] 관련 파일들의 위치 파악
+- [ ] 기존 코드 패턴 분석
+- [ ] 의존성 및 설정 파일 확인
+
+### **2. 요청 분석**
+
+- [ ] 사용자 요청의 명확한 이해
+- [ ] 필요한 기술 스택 파악
+- [ ] 기존 코드와의 일관성 확인
+- [ ] 구현 방법 및 접근 방식 결정
+
+### **3. 컨텍스트 수집**
+
+- [ ] 관련 컴포넌트 검토
+- [ ] 상태 관리 구조 파악
+- [ ] API 및 서비스 구조 확인
+- [ ] 기존 스타일링 패턴 분석
+
+## 💻 코드 작성 지침
+
+### **React 컴포넌트 작성**
+
+```typescript
+// ✅ React 19 권장 패턴
+interface ComponentProps {
+  // 명시적 타입 정의
+  data: DataType
+  onAction?: (data: DataType) => void
+}
+
+const Component = ({ data, onAction }: ComponentProps) => {
+  // 훅은 최상단에 배치
+  const [localState, setLocalState] = useState<LocalStateType>()
+
+  // 이벤트 핸들러
+  const handleAction = useCallback(() => {
+    onAction?.(data)
+  }, [data, onAction])
+
+  // 메모이제이션된 값
+  const processedData = useMemo(() => {
+    return processData(data)
+  }, [data])
+
+  return (
+    <div className="component-container">
+      {/* JSX 내용 */}
+    </div>
+  )
+}
+
+// ✅ React 19 use 훅 활용 (비동기 데이터)
+const AsyncComponent = ({ dataId }: { dataId: string }) => {
+  const data = use(dataService.getData(dataId))
+
+  return (
+    <div className="async-component">
+      <h2>{data.title}</h2>
+      <p>{data.description}</p>
+    </div>
+  )
+}
+
+export default Component
+```
+
+### **TypeScript 타입 정의**
+
+```typescript
+// ✅ 권장하는 타입 정의
+interface Character {
+  id: string
+  name: string
+  level: number
+  experience: number
+  stats: CharacterStats
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface CharacterStats {
+  health: number
+  mana: number
+  strength: number
+  agility: number
+  intelligence: number
+}
+
+// 유니온 타입 활용
+type CharacterClass = 'warrior' | 'mage' | 'archer' | 'rogue'
+
+// 제네릭 활용
+interface ApiResponse<T> {
+  data: T
+  success: boolean
+  message?: string
+}
+```
+
+### **스타일링 지침**
+
+```tsx
+// ✅ Tailwind CSS 우선 사용
+<div className="w-full md:w-1/2 lg:w-1/3 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+  <h2 className="text-xl font-bold text-gray-800 mb-4">제목</h2>
+  <p className="text-gray-600 leading-relaxed">내용</p>
+</div>
+
+// ✅ Ant Design 컴포넌트 활용
+<Card className="character-card">
+  <Space direction="vertical" size="middle" className="w-full">
+    <Input placeholder="캐릭터 이름" />
+    <Button type="primary" onClick={handleSave}>
+      저장
+    </Button>
+  </Space>
+</Card>
+```
+
+## 🔄 상태 관리 지침
+
+### **Zustand 스토어 설계**
+
+```typescript
+// ✅ 권장하는 스토어 구조
+interface CharacterStore {
+  // 상태
+  characters: Character[]
+  selectedCharacter: Character | null
+  isLoading: boolean
+  error: string | null
+
+  // 액션
+  setCharacters: (characters: Character[]) => void
+  addCharacter: (character: Character) => void
+  updateCharacter: (id: string, updates: Partial<Character>) => void
+  deleteCharacter: (id: string) => void
+  selectCharacter: (character: Character | null) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+}
+
+export const useCharacterStore = create<CharacterStore>((set, get) => ({
+  // 초기 상태
+  characters: [],
+  selectedCharacter: null,
+  isLoading: false,
+  error: null,
+
+  // 액션 구현
+  setCharacters: characters => set({ characters }),
+  addCharacter: character =>
+    set(state => ({
+      characters: [...state.characters, character],
+    })),
+  updateCharacter: (id, updates) =>
+    set(state => ({
+      characters: state.characters.map(char =>
+        char.id === id ? { ...char, ...updates, updatedAt: new Date() } : char
+      ),
+    })),
+  deleteCharacter: id =>
+    set(state => ({
+      characters: state.characters.filter(char => char.id !== id),
+    })),
+  selectCharacter: character => set({ selectedCharacter: character }),
+  setLoading: loading => set({ isLoading: loading }),
+  setError: error => set({ error }),
+}))
+```
+
+### **React Query 활용**
+
+```typescript
+// ✅ 권장하는 쿼리 패턴
+const useCharacters = () => {
+  return useQuery({
+    queryKey: ['characters'],
+    queryFn: characterService.getCharacters,
+    staleTime: 5 * 60 * 1000, // 5분
+    cacheTime: 10 * 60 * 1000, // 10분
+  })
+}
+
+const useCharacterManagement = () => {
+  const queryClient = useQueryClient()
+
+  const createMutation = useMutation({
+    mutationFn: characterService.createCharacter,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['characters'] })
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateCharacterDto }) =>
+      characterService.updateCharacter(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['characters'] })
+    },
+  })
+
+  return {
+    createCharacter: createMutation.mutate,
+    updateCharacter: updateMutation.mutate,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+  }
+}
+```
+
+## 🎨 UI/UX 설계 지침
+
+### **컴포넌트 설계 원칙**
+
+1. **단일 책임**: 하나의 컴포넌트는 하나의 역할만
+2. **재사용성**: 다른 곳에서도 사용할 수 있도록 설계
+3. **확장성**: 새로운 기능을 쉽게 추가할 수 있도록 설계
+4. **접근성**: 키보드 네비게이션, 스크린 리더 지원
+
+### **반응형 디자인**
+
+```tsx
+// ✅ 반응형 클래스 활용
+<div
+  className="
+  w-full 
+  md:w-1/2 
+  lg:w-1/3 
+  xl:w-1/4
+  p-2 
+  md:p-4 
+  lg:p-6
+"
+>
+  <div
+    className="
+    text-sm 
+    md:text-base 
+    lg:text-lg
+    font-medium 
+    md:font-semibold
+  "
+  >
+    내용
+  </div>
+</div>
+```
+
+### **로딩 및 에러 상태**
+
+```tsx
+// ✅ 로딩 상태 처리
+const CharacterList: React.FC = () => {
+  const { characters, isLoading, error } = useCharacters()
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8 text-red-600">
+        <ExclamationCircleOutlined className="text-2xl mb-2" />
+        <p>데이터를 불러오는 중 오류가 발생했습니다.</p>
+        <Button onClick={() => window.location.reload()}>다시 시도</Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="character-list">
+      {characters.map(character => (
+        <CharacterCard key={character.id} character={character} />
+      ))}
+    </div>
+  )
+}
+```
+
+## 🧪 테스트 및 품질 관리
+
+### **코드 품질 체크**
+
+- [ ] TypeScript 타입 오류 없음
+- [ ] ESLint 규칙 준수
+- [ ] Prettier 포맷팅 적용
+- [ ] 불필요한 코드 제거
+- [ ] 성능 최적화 적용
+
+### **테스트 작성 지침**
+
+```typescript
+// ✅ 테스트 작성 예시
+describe('CharacterCard', () => {
+  const defaultProps = {
+    character: mockCharacter,
+    onEdit: jest.fn(),
+    onDelete: jest.fn(),
+  }
+
+  it('캐릭터 정보를 올바르게 렌더링한다', () => {
+    render(<CharacterCard {...defaultProps} />)
+    expect(screen.getByText(mockCharacter.name)).toBeInTheDocument()
+    expect(screen.getByText(`Level ${mockCharacter.level}`)).toBeInTheDocument()
+  })
+
+  it('편집 버튼 클릭 시 onEdit이 호출된다', () => {
+    render(<CharacterCard {...defaultProps} />)
+    fireEvent.click(screen.getByText('편집'))
+    expect(defaultProps.onEdit).toHaveBeenCalledWith(mockCharacter)
+  })
+
+  it('삭제 버튼 클릭 시 확인 다이얼로그가 표시된다', () => {
+    render(<CharacterCard {...defaultProps} />)
+    fireEvent.click(screen.getByText('삭제'))
+    expect(screen.getByText('정말 삭제하시겠습니까?')).toBeInTheDocument()
+  })
+})
+```
+
+## 🚀 성능 최적화 지침
+
+### **React 최적화**
+
+```typescript
+// ✅ 메모이제이션 활용
+const MemoizedCharacterCard = React.memo(
+  CharacterCard,
+  (prevProps, nextProps) => {
+    // 커스텀 비교 로직
+    return (
+      prevProps.character.id === nextProps.character.id &&
+      prevProps.character.level === nextProps.character.level
+    )
+  }
+)
+
+// ✅ 콜백 메모이제이션
+const handleEdit = useCallback((character: Character) => {
+  setSelectedCharacter(character)
+  setIsEditing(true)
+}, [])
+
+// ✅ 값 메모이제이션
+const filteredCharacters = useMemo(() => {
+  return characters.filter(char => char.level >= minLevel)
+}, [characters, minLevel])
+```
+
+### **번들 최적화**
+
+```typescript
+// ✅ 코드 스플리팅
+const LazyCharacterManager = React.lazy(() => import('./CharacterManager'))
+
+// ✅ 동적 임포트
+const loadAdvancedFeatures = async () => {
+  const { AdvancedEditor } = await import('./AdvancedEditor')
+  return AdvancedEditor
+}
+```
+
+## 📝 문서화 지침
+
+### **코드 주석**
+
+```typescript
+/**
+ * 캐릭터를 생성합니다.
+ * @param data - 생성할 캐릭터 데이터
+ * @returns 생성된 캐릭터 객체
+ * @throws {ValidationError} 데이터 유효성 검사 실패 시
+ */
+const createCharacter = async (
+  data: CreateCharacterDto
+): Promise<Character> => {
+  // 유효성 검사
+  if (!data.name || data.name.trim().length === 0) {
+    throw new ValidationError('캐릭터 이름은 필수입니다.')
+  }
+
+  // 캐릭터 생성 로직
+  const character = await characterService.createCharacter(data)
+
+  // 스토어 업데이트
+  useCharacterStore.getState().addCharacter(character)
+
+  return character
+}
+```
+
+### **README 업데이트**
+
+- [ ] 새로운 기능 설명 추가
+- [ ] 사용법 예시 업데이트
+- [ ] 의존성 변경사항 반영
+- [ ] 설정 방법 업데이트
+
+## 🔧 문제 해결 지침
+
+### **디버깅 접근법**
+
+1. **문제 파악**: 에러 메시지, 로그, 사용자 설명 분석
+2. **원인 추적**: 관련 코드, 상태, 데이터 흐름 확인
+3. **해결책 제시**: 코드 수정, 설정 변경, 대안 방법 제안
+4. **검증**: 수정된 코드가 문제를 해결하는지 확인
+
+### **일반적인 문제 해결**
+
+```typescript
+// ✅ 에러 바운더리 구현
+class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary">
+          <h2>문제가 발생했습니다</h2>
+          <p>페이지를 새로고침해주세요.</p>
+          <Button onClick={() => window.location.reload()}>
+            새로고침
+          </Button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+## 🎯 AI 어시스턴트 행동 원칙
+
+### **1. 사용자 중심 사고**
+
+- 사용자의 요청을 정확히 이해
+- 실용적이고 즉시 적용 가능한 해결책 제시
+- 사용자의 기술 수준에 맞는 설명 제공
+
+### **2. 일관성 유지**
+
+- 기존 코드 패턴과 스타일 준수
+- 프로젝트의 아키텍처 원칙 따르기
+- 동일한 문제에 대해 일관된 해결책 제시
+
+### **3. 품질 우선**
+
+- 코드 품질과 성능 고려
+- 테스트 가능한 코드 작성
+- 유지보수성과 확장성 고려
+
+### **4. 지속적 학습**
+
+- 프로젝트의 발전에 따라 지식 업데이트
+- 새로운 기술과 패턴 학습
+- 사용자 피드백을 통한 개선
+
+---
+
+> **이 지침을 따라 일관되고 효율적으로 프로젝트에 도움을 드리겠습니다.**
+> description:
+> globs:
+
+## alwaysApply: true

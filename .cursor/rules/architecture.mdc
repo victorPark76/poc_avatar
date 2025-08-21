@@ -1,0 +1,530 @@
+# 아키텍처 가이드 (Architecture Guide)
+
+> **이 문서는 프로젝트의 아키텍처 설계 원칙과 구조를 정의합니다.**
+
+## 🏗️ 아키텍처 원칙
+
+### **1. Feature-Based Architecture**
+
+- **기능 중심**: 각 기능을 독립적인 모듈로 구성
+- **응집도 높음**: 관련된 코드를 한 곳에 모음
+- **결합도 낮음**: 모듈 간 의존성 최소화
+
+### **2. Atomic Design**
+
+- **Atoms**: 기본 UI 요소 (Button, Input, Icon)
+- **Molecules**: 복합 컴포넌트 (SearchBar, FormField)
+- **Organisms**: 큰 단위 컴포넌트 (Header, Sidebar, CharacterList)
+- **Templates**: 페이지 레이아웃
+- **Pages**: 실제 페이지 구현
+
+### **3. Separation of Concerns**
+
+- **UI**: 컴포넌트와 스타일링
+- **Logic**: 비즈니스 로직과 상태 관리
+- **Data**: API 호출과 데이터 처리
+- **Utils**: 공통 유틸리티 함수
+
+## 📁 폴더 구조 설계
+
+### **루트 구조**
+
+```
+src/
+├── components/          # 공통 컴포넌트
+├── features/            # 기능별 모듈
+├── hooks/               # 커스텀 훅
+├── stores/              # 상태 관리
+├── services/            # API 서비스
+├── utils/               # 유틸리티 함수
+├── types/               # 타입 정의
+├── constants/           # 상수 정의
+└── assets/              # 정적 자산
+```
+
+### **Feature 모듈 구조**
+
+```
+src/features/poc_a/
+├── components/          # 기능별 컴포넌트
+│   ├── CharacterManager/
+│   ├── CloudScene/
+│   └── JsonEditor/
+├── hooks/               # 기능별 커스텀 훅
+├── stores/              # 기능별 상태 (필요시)
+├── services/            # 기능별 API
+├── types/               # 기능별 타입
+├── utils/               # 기능별 유틸리티
+└── index.tsx            # 진입점
+```
+
+### **컴포넌트 계층 구조**
+
+```
+components/
+├── atoms/               # 기본 UI 요소
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.test.tsx
+│   │   └── index.ts
+│   ├── Input/
+│   └── Icon/
+├── molecules/            # 복합 컴포넌트
+│   ├── SearchBar/
+│   ├── FormField/
+│   └── Card/
+├── organisms/            # 큰 단위 컴포넌트
+│   ├── Header/
+│   ├── Sidebar/
+│   └── CharacterList/
+└── layout/               # 레이아웃 컴포넌트
+    ├── MainLayout/
+    └── PageContainer/
+```
+
+## 🚀 React 19 새로운 기능 활용
+
+### **주요 변경사항**
+
+#### **1. use 훅 (Suspense 기반 데이터 페칭)**
+
+- **Promise 직접 사용**: 컴포넌트에서 Promise를 직접 사용할 수 있음
+- **Suspense 통합**: 로딩 상태를 Suspense로 처리
+- **에러 경계**: ErrorBoundary와 함께 사용하여 에러 처리
+
+#### **2. 컴포넌트 작성 방식**
+
+- **React.FC 제거**: 더 이상 권장하지 않음
+- **명시적 타입 정의**: 직접 props 인터페이스 정의
+- **자동 타입 추론**: TypeScript의 향상된 타입 추론 활용
+
+#### **3. 성능 최적화**
+
+- **자동 메모이제이션**: React 19의 향상된 메모이제이션
+- **번들 크기 감소**: 더 작은 번들 크기
+- **빠른 렌더링**: 향상된 렌더링 성능
+
+### **마이그레이션 가이드**
+
+```typescript
+// ❌ React 18 이전 방식
+const Component: React.FC<Props> = ({ data }) => {
+  const [state, setState] = useState()
+
+  useEffect(() => {
+    // 데이터 페칭
+  }, [])
+
+  return <div>{data}</div>
+}
+
+// ✅ React 19 권장 방식
+const Component = ({ data }: Props) => {
+  const [state, setState] = useState()
+
+  // use 훅으로 데이터 페칭
+  const asyncData = use(dataService.getData())
+
+  return <div>{asyncData}</div>
+}
+```
+
+## 🔄 상태 관리 아키텍처
+
+### **React 19 + Zustand + React Query 조합**
+
+#### **React 19 use 훅과의 통합**
+
+```typescript
+// ✅ React 19 use 훅을 활용한 데이터 페칭
+const CharacterList = () => {
+  // React Query와 함께 사용하여 캐싱 및 동기화
+  const queryClient = useQueryClient()
+  const characters = use(characterService.getCharacters())
+
+  // Zustand로 UI 상태 관리
+  const { selectedCharacterId, setSelectedCharacter } = useCharacterStore()
+
+  return (
+    <div>
+      {characters.map(character => (
+        <CharacterCard
+          key={character.id}
+          character={character}
+          isSelected={character.id === selectedCharacterId}
+          onSelect={() => setSelectedCharacter(character.id)}
+        />
+      ))}
+    </div>
+  )
+}
+```
+
+```typescript
+// 전역 상태 (Zustand)
+interface AppStore {
+  // UI 상태
+  theme: 'light' | 'dark'
+  sidebarOpen: boolean
+
+  // 액션
+  toggleTheme: () => void
+  toggleSidebar: () => void
+}
+
+// React 19 use 훅과 함께 사용하는 서비스
+class CharacterService {
+  async getCharacters(): Promise<Character[]> {
+    // API 호출 로직
+    return fetch('/api/characters').then(res => res.json())
+  }
+
+  async getCharacter(id: string): Promise<Character> {
+    return fetch(`/api/characters/${id}`).then(res => res.json())
+  }
+}
+
+// 컴포넌트에서 사용
+const CharacterManager = () => {
+  const characters = use(characterService.getCharacters())
+
+  return (
+    <Suspense fallback={<CharacterListSkeleton />}>
+      <CharacterList characters={characters} />
+    </Suspense>
+  )
+}
+```
+
+// 서버 상태 (React Query)
+const useCharacters = () => {
+return useQuery({
+queryKey: ['characters'],
+queryFn: characterService.getCharacters,
+staleTime: 5 _ 60 _ 1000, // 5분
+})
+}
+
+````
+
+### **상태 분리 원칙**
+
+- **Zustand**: UI 상태, 사용자 설정, 전역 설정
+- **React Query**: 서버 상태, 캐싱, 동기화
+- **Local State**: 컴포넌트 내부 상태
+- **Form State**: 폼 상태 (React Hook Form 등)
+
+## 🎨 UI 컴포넌트 아키텍처
+
+### **컴포넌트 설계 패턴**
+
+```typescript
+// 1. Props 인터페이스 정의
+interface ComponentProps {
+  // 필수 props
+  required: string
+
+  // 선택적 props
+  optional?: number
+
+  // 이벤트 핸들러
+  onAction?: (data: any) => void
+}
+
+// 2. 기본값 설정
+const defaultProps = {
+  optional: 0,
+  onAction: () => {},
+}
+
+// 3. 컴포넌트 구현
+const Component: React.FC<ComponentProps> = ({
+  required,
+  optional = defaultProps.optional,
+  onAction = defaultProps.onAction,
+}) => {
+  // 구현 로직
+}
+````
+
+### **컴포넌트 합성 패턴**
+
+```typescript
+// 합성 컴포넌트 예시
+const CharacterCard = {
+  Root: ({ children, ...props }: CardProps) => (
+    <Card {...props}>{children}</Card>
+  ),
+  Header: ({ children, ...props }: CardHeaderProps) => (
+    <div className="card-header" {...props}>{children}</div>
+  ),
+  Content: ({ children, ...props }: CardContentProps) => (
+    <div className="card-content" {...props}>{children}</div>
+  ),
+}
+
+// 사용 예시
+<CharacterCard.Root>
+  <CharacterCard.Header>캐릭터 정보</CharacterCard.Header>
+  <CharacterCard.Content>내용</CharacterCard.Content>
+</CharacterCard.Root>
+```
+
+## 🔌 서비스 레이어 아키텍처
+
+### **API 서비스 구조**
+
+```typescript
+// 기본 서비스 인터페이스
+interface BaseService<T, CreateDto, UpdateDto> {
+  getAll(): Promise<T[]>
+  getById(id: string): Promise<T | null>
+  create(data: CreateDto): Promise<T>
+  update(id: string, data: UpdateDto): Promise<T>
+  delete(id: string): Promise<boolean>
+}
+
+// 캐릭터 서비스 구현
+class CharacterService
+  implements BaseService<Character, CreateCharacterDto, UpdateCharacterDto>
+{
+  async getAll(): Promise<Character[]> {
+    // 구현 로직
+  }
+
+  async getById(id: string): Promise<Character | null> {
+    // 구현 로직
+  }
+
+  // ... 기타 메서드
+}
+```
+
+### **서비스 의존성 주입**
+
+```typescript
+// 서비스 팩토리
+class ServiceFactory {
+  private static instance: ServiceFactory
+  private services: Map<string, any> = new Map()
+
+  static getInstance(): ServiceFactory {
+    if (!ServiceFactory.instance) {
+      ServiceFactory.instance = new ServiceFactory()
+    }
+    return ServiceFactory.instance
+  }
+
+  getCharacterService(): CharacterService {
+    if (!this.services.has('character')) {
+      this.services.set('character', new CharacterService())
+    }
+    return this.services.get('character')
+  }
+}
+
+// 사용 예시
+const characterService = ServiceFactory.getInstance().getCharacterService()
+```
+
+## 🎭 애니메이션 아키텍처
+
+### **Three.js (3D) 구조**
+
+```typescript
+// 씬 관리자
+class SceneManager {
+  private scene: THREE.Scene
+  private camera: THREE.Camera
+  private renderer: THREE.WebGLRenderer
+
+  constructor() {
+    this.scene = new THREE.Scene()
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    )
+    this.renderer = new THREE.WebGLRenderer()
+  }
+
+  // 씬 초기화
+  init() {
+    // 초기화 로직
+  }
+
+  // 애니메이션 루프
+  animate() {
+    requestAnimationFrame(() => this.animate())
+    this.renderer.render(this.scene, this.camera)
+  }
+}
+```
+
+### **PixiJS (2D) 구조**
+
+```typescript
+// 애니메이션 관리자
+class AnimationManager {
+  private app: PIXI.Application
+  private sprites: Map<string, PIXI.Sprite> = new Map()
+
+  constructor() {
+    this.app = new PIXI.Application({
+      width: 800,
+      height: 600,
+      backgroundColor: 0x1099bb,
+    })
+  }
+
+  // 스프라이트 추가
+  addSprite(id: string, texture: PIXI.Texture) {
+    const sprite = new PIXI.Sprite(texture)
+    this.sprites.set(id, sprite)
+    this.app.stage.addChild(sprite)
+  }
+
+  // 애니메이션 재생
+  playAnimation(id: string, animation: Animation) {
+    const sprite = this.sprites.get(id)
+    if (sprite) {
+      // 애니메이션 로직
+    }
+  }
+}
+```
+
+## 🧪 테스트 아키텍처
+
+### **테스트 구조**
+
+```
+src/
+├── __tests__/            # 테스트 파일들
+│   ├── components/       # 컴포넌트 테스트
+│   ├── hooks/            # 훅 테스트
+│   ├── services/         # 서비스 테스트
+│   └── utils/            # 유틸리티 테스트
+├── __mocks__/            # 모킹 파일들
+└── test-utils/           # 테스트 유틸리티
+```
+
+### **테스트 패턴**
+
+```typescript
+// 컴포넌트 테스트
+describe('CharacterCard', () => {
+  const defaultProps = {
+    character: mockCharacter,
+    onEdit: jest.fn(),
+    onDelete: jest.fn(),
+  }
+
+  it('캐릭터 정보를 올바르게 렌더링한다', () => {
+    render(<CharacterCard {...defaultProps} />)
+    expect(screen.getByText(mockCharacter.name)).toBeInTheDocument()
+  })
+
+  it('편집 버튼 클릭 시 onEdit이 호출된다', () => {
+    render(<CharacterCard {...defaultProps} />)
+    fireEvent.click(screen.getByText('편집'))
+    expect(defaultProps.onEdit).toHaveBeenCalledWith(mockCharacter)
+  })
+})
+```
+
+## 🚀 성능 최적화 아키텍처
+
+### **코드 스플리팅**
+
+```typescript
+// 라우트별 코드 스플리팅
+const routes = [
+  {
+    path: '/poc_a',
+    component: React.lazy(() => import('@/features/poc_a')),
+  },
+  {
+    path: '/bon',
+    component: React.lazy(() => import('@/features/bon')),
+  },
+]
+
+// 컴포넌트별 코드 스플리팅
+const LazyCharacterManager = React.lazy(() => import('./CharacterManager'))
+```
+
+### **메모이제이션 전략**
+
+```typescript
+// 컴포넌트 메모이제이션
+const MemoizedCharacterList = React.memo(
+  CharacterList,
+  (prevProps, nextProps) => {
+    // 커스텀 비교 로직
+    return (
+      prevProps.characters.length === nextProps.characters.length &&
+      prevProps.selectedId === nextProps.selectedId
+    )
+  }
+)
+
+// 훅 메모이제이션
+const useMemoizedCharacters = (characters: Character[]) => {
+  return useMemo(() => {
+    return characters.filter(char => char.level > 10)
+  }, [characters])
+}
+```
+
+## 🔧 설정 및 환경 관리
+
+### **환경별 설정**
+
+```typescript
+// 환경 설정
+interface Config {
+  apiUrl: string
+  environment: 'development' | 'staging' | 'production'
+  debug: boolean
+}
+
+const config: Config = {
+  development: {
+    apiUrl: 'http://localhost:3000',
+    environment: 'development',
+    debug: true,
+  },
+  production: {
+    apiUrl: 'https://api.production.com',
+    environment: 'production',
+    debug: false,
+  },
+}[process.env.NODE_ENV || 'development']
+```
+
+### **기능 플래그**
+
+```typescript
+// 기능 플래그 관리
+interface FeatureFlags {
+  enableSpineAnimation: boolean
+  enableCloudBackground: boolean
+  enableAdvancedEditing: boolean
+}
+
+const featureFlags: FeatureFlags = {
+  enableSpineAnimation: process.env.REACT_APP_ENABLE_SPINE === 'true',
+  enableCloudBackground: process.env.REACT_APP_ENABLE_CLOUD === 'true',
+  enableAdvancedEditing: process.env.REACT_APP_ENABLE_ADVANCED === 'true',
+}
+```
+
+---
+
+> **이 아키텍처 가이드를 따라 확장 가능하고 유지보수 가능한 코드를 작성합시다.**
+> description:
+> globs:
+
+## alwaysApply: true
