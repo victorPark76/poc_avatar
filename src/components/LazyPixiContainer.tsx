@@ -3,9 +3,7 @@ import { lazy, Suspense } from 'react'
 
 // PixiJS 컨테이너를 동적으로 로딩
 const MainContainer = lazy(() =>
-  import('@/features/poc_spine/components/MainApplication').then(module => ({
-    default: module.MainApplication,
-  }))
+  import('@/features/poc_spine/components/MainApplication')
 )
 
 export const LazyPixiContainer = () => {

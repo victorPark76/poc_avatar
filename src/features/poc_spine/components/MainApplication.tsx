@@ -16,7 +16,7 @@ extend({
   Sprite,
 })
 
-export const MainApplication = () => {
+const MainApplication = () => {
   const parentRef = useRef(null)
   const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
   const [isSpineReady, setIsSpineReady] = useState(false)
@@ -203,6 +203,9 @@ export const MainApplication = () => {
     </>
   )
 }
+
+// Default export
+export default MainApplication
 
 // MainContainer로도 export
 export const MainContainer = MainApplication
