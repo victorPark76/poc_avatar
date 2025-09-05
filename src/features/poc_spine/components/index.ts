@@ -1,5 +1,6 @@
 export { MainApplication } from './MainApplication'
 export { SpineContainer } from './SpineContainer'
 export { SpineControls } from './SpineControls'
+export { SpineControlsInline } from './SpineControlsInline'
 export { SpinePreview } from './SpinePreview'
 export { SpinePreviewContainer } from './SpinePreviewContainer'

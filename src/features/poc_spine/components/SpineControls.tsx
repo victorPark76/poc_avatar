@@ -14,6 +14,9 @@ export const SpineControls = ({
   const [isSoundEnabled, setIsSoundEnabled] = useState(false)
   const [masterVolume, setMasterVolume] = useState(0.7)
   const [soundNames, setSoundNames] = useState<string[]>([])
+  const [currentDirection, setCurrentDirection] = useState<'left' | 'right'>(
+    'right'
+  )
 
   // 사운드 상태 업데이트
   useEffect(() => {
@@ -53,6 +56,12 @@ export const SpineControls = ({
     spineBoy.playSound(soundName)
   }
 
+  // 방향 변경
+  const changeDirection = (direction: 'left' | 'right') => {
+    spineBoy.setDirection(direction)
+    setCurrentDirection(direction)
+  }
+
   return (
     <div
       style={{
@@ -68,6 +77,65 @@ export const SpineControls = ({
     >
       <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
         Spine Controls:
+      </div>
+
+      {/* 방향 컨트롤 */}
+      <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '4px', fontSize: '12px', color: '#ccc' }}>
+          방향:
+        </div>
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+          <button
+            onClick={() => changeDirection('left')}
+            style={{
+              padding: '6px 12px',
+              border: 'none',
+              borderRadius: '4px',
+              background: currentDirection === 'left' ? '#FF5722' : '#757575',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: currentDirection === 'left' ? 'bold' : 'normal',
+            }}
+            onMouseEnter={e => {
+              if (currentDirection !== 'left') {
+                e.currentTarget.style.background = '#616161'
+              }
+            }}
+            onMouseLeave={e => {
+              if (currentDirection !== 'left') {
+                e.currentTarget.style.background = '#757575'
+              }
+            }}
+          >
+            ← 왼쪽
+          </button>
+          <button
+            onClick={() => changeDirection('right')}
+            style={{
+              padding: '6px 12px',
+              border: 'none',
+              borderRadius: '4px',
+              background: currentDirection === 'right' ? '#FF5722' : '#757575',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: currentDirection === 'right' ? 'bold' : 'normal',
+            }}
+            onMouseEnter={e => {
+              if (currentDirection !== 'right') {
+                e.currentTarget.style.background = '#616161'
+              }
+            }}
+            onMouseLeave={e => {
+              if (currentDirection !== 'right') {
+                e.currentTarget.style.background = '#757575'
+              }
+            }}
+          >
+            오른쪽 →
+          </button>
+        </div>
       </div>
 
       {/* 애니메이션 컨트롤 */}

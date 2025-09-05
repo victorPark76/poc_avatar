@@ -6,7 +6,7 @@ import { SpineBoy } from '../ts/spine'
 import { BunnySprite } from './BunnySprite'
 import { CloudSprite } from './CloudSprite'
 import { SpineContainer } from './SpineContainer'
-import { SpineControls } from './SpineControls'
+import { SpineControlsInline } from './SpineControlsInline'
 import { SpinePreview } from './SpinePreview'
 import { SpinePreviewContainer } from './SpinePreviewContainer'
 
@@ -75,6 +75,7 @@ export const MainApplication = () => {
   return (
     <>
       <div
+        id="main-application"
         ref={parentRef}
         style={{
           width: '100%',
@@ -122,10 +123,10 @@ export const MainApplication = () => {
             y="40%" // 16:9 비율의 기준 크기
           />
         </Application>
-
         {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
+        <SpineControlsInline spineBoy={spineBoy} isSpineReady={isSpineReady} />
       </div>
-      <SpineControls spineBoy={spineBoy} isSpineReady={isSpineReady} />
+      {/* <SpineControls spineBoy={spineBoy} isSpineReady={isSpineReady} /> */}
       <div className="flex">
         <div style={{ width: '50%', height: '100%' }}>
           <SpinePreview

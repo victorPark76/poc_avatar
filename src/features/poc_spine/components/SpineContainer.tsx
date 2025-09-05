@@ -201,7 +201,7 @@ export const SpineContainer = ({ onSpineReady }: SpineContainerProps) => {
       }
       onSpineReady?.(null, false)
     }
-  }, [onSpineReady])
+  }, []) // 빈 의존성 배열로 변경하여 한 번만 실행되도록 함
 
   return (
     <>
@@ -216,9 +216,6 @@ export const SpineContainer = ({ onSpineReady }: SpineContainerProps) => {
           }}
         />
       )}
-
-      {/* Spine 제어 UI */}
-      {/* SpineControls spineBoy={spineBoy} isSpineReady={isSpineReady} /> */}
     </>
   )
 }
