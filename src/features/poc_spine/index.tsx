@@ -1,7 +1,7 @@
-import { MainApplication } from './components'
+import { LazyPixiContainer } from '@/components/LazyPixiContainer'
 
 const Index = () => {
-  return <MainApplication />
+  return <LazyPixiContainer />
 }
 
 export default Index

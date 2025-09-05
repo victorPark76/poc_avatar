@@ -1,4 +1,4 @@
-export { default as MainApplication } from './MainApplication'
+export { MainApplication } from './MainApplication'
 export { SpineContainer } from './SpineContainer'
 export { SpineControls } from './SpineControls'
 export { SpinePreview } from './SpinePreview'
