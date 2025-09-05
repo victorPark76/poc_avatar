@@ -203,3 +203,6 @@ export const MainApplication = () => {
     </>
   )
 }
+
+// MainContainer로도 export
+export const MainContainer = MainApplication
