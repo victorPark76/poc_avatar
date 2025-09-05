@@ -1,5 +1,5 @@
 import { Assets, Container } from 'pixi.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { calculateScale } from '../../../utils/aspectRatio'
 import { type SoundConfig } from '../ts/soundManager'
 import { SpineBoy } from '../ts/spine'
@@ -10,10 +10,7 @@ interface SpineContainerProps {
   size?: number
 }
 
-export const SpineContainer = ({
-  onSpineReady,
-  size = 1,
-}: SpineContainerProps) => {
+const SpineContainer = ({ onSpineReady, size = 1 }: SpineContainerProps) => {
   const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
   const [isSpineReady, setIsSpineReady] = useState(false)
   const containerRef = useRef<Container>(null)
@@ -35,14 +32,6 @@ export const SpineContainer = ({
         const baseScale = calculateScale(width, height)
         const finalScale = baseScale * size
         spineView.scale.set(finalScale)
-
-        console.log('Spine updated:', {
-          x: spineView.x,
-          y: spineView.y,
-          baseScale,
-          size,
-          finalScale,
-        })
       }
     }
   }, [spineBoy, size])
@@ -55,7 +44,7 @@ export const SpineContainer = ({
         if (spineView) {
           container.addChild(spineView)
           // 컨테이너에 추가된 후 레이아웃 업데이트
-          setTimeout(() => updateSpineLayout(), 0)
+          updateSpineLayout()
         }
       }
     },
@@ -225,3 +214,5 @@ export const SpineContainer = ({
     </>
   )
 }
+
+export default memo(SpineContainer)

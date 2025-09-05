@@ -1,15 +1,15 @@
 import { Application, extend } from '@pixi/react'
 import { Container, Graphics, Sprite } from 'pixi.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { adjustContainerToAspectRatio } from '../../../utils/aspectRatio'
 import { SpineBoy } from '../ts/spine'
-import { BunnySprite } from './BunnySprite'
+import { BunnySprite, type BunnySpriteRef } from './BunnySprite'
 import { CloudSprite } from './CloudSprite'
-import { SpineContainer } from './SpineContainer'
+import SpineContainer from './SpineContainer'
 import { SpineControlsInline } from './SpineControlsInline'
 import { SpineControlsSound } from './SpineControlsSound'
 import { SpinePreview } from './SpinePreview'
-import { SpinePreviewContainer } from './SpinePreviewContainer'
+import SpinePreviewContainer from './SpinePreviewContainer'
 
 extend({
   Container,
@@ -19,15 +19,53 @@ extend({
 
 export const MainApplication = () => {
   const parentRef = useRef(null)
+  const bunnyRef = useRef<BunnySpriteRef>(null)
   const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
   const [isSpineReady, setIsSpineReady] = useState(false)
   const [spineSize, setSpineSize] = useState(0.3)
+  const [bunnyPosition, setBunnyPosition] = useState({ x: 10, y: 70 })
+
+  // baseSize를 메모이제이션하여 불필요한 재렌더링 방지
+  const baseSize = useMemo(() => ({ width: 800, height: 450 }), [])
 
   // Spine 상태 변경 핸들러
   const handleSpineReady = useCallback(
     (spineBoy: SpineBoy | null, isReady: boolean) => {
       setSpineBoy(spineBoy)
       setIsSpineReady(isReady)
+    },
+    []
+  )
+
+  // 버니 이동 함수들
+  const moveBunnyLeft = useCallback(() => {
+    if (bunnyRef.current) {
+      bunnyRef.current.moveLeft()
+    }
+  }, [])
+
+  const moveBunnyRight = useCallback(() => {
+    if (bunnyRef.current) {
+      bunnyRef.current.moveRight()
+    }
+  }, [])
+
+  const moveBunnyUp = useCallback(() => {
+    if (bunnyRef.current) {
+      bunnyRef.current.moveUp()
+    }
+  }, [])
+
+  const moveBunnyDown = useCallback(() => {
+    if (bunnyRef.current) {
+      bunnyRef.current.moveDown()
+    }
+  }, [])
+
+  // 버니 위치 변경 핸들러
+  const handleBunnyPositionChange = useCallback(
+    (position: { x: number; y: number }) => {
+      setBunnyPosition(position)
     },
     []
   )
@@ -72,7 +110,7 @@ export const MainApplication = () => {
       clearTimeout(resizeTimeout)
       resizeObserver.disconnect()
     }
-  }, [updateContainerHeight])
+  }, []) // updateContainerHeight 의존성 제거
 
   return (
     <>
@@ -97,10 +135,13 @@ export const MainApplication = () => {
           antialias={true}
         >
           <BunnySprite
+            ref={bunnyRef}
             initialX={10}
             initialY={70}
             initialScale={1}
             positionType="percentage"
+            baseSize={baseSize}
+            onPositionChange={handleBunnyPositionChange}
           />
           <CloudSprite
             clouds={[
@@ -134,8 +175,51 @@ export const MainApplication = () => {
             y="50%" // 16:9 비율의 기준 크기
           />
         </Application>
+
+        {/* 이동 버튼 UI */}
+
         {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
         <SpineControlsInline spineBoy={spineBoy} isSpineReady={isSpineReady} />
+      </div>
+      <div className=" relative top-4 right-4 z-40000">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+          <h3 className="text-sm font-semibold mb-3 text-gray-700">
+            캐릭터 이동
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            <div></div>
+            <button
+              onClick={moveBunnyUp}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+            >
+              ↑
+            </button>
+            <div></div>
+            <button
+              onClick={moveBunnyLeft}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+            >
+              ←
+            </button>
+            <div className="bg-gray-200 rounded px-3 py-2 text-xs text-center">
+              {Math.round(bunnyPosition.x)}%, {Math.round(bunnyPosition.y)}%
+            </div>
+            <button
+              onClick={moveBunnyRight}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+            >
+              →
+            </button>
+            <div></div>
+            <button
+              onClick={moveBunnyDown}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+            >
+              ↓
+            </button>
+            <div></div>
+          </div>
+        </div>
       </div>
       <SpineControlsSound
         spineBoy={spineBoy}
@@ -143,8 +227,8 @@ export const MainApplication = () => {
         spineSize={spineSize}
         onSpineSizeChange={setSpineSize}
       />
-      <div className="flex">
-        <div style={{ width: '50%', height: '100%' }}>
+      <div className="flex" style={{ minHeight: '400px' }}>
+        <div style={{ width: '50%', height: '400px', position: 'relative' }}>
           <SpinePreview
             skeletonSrc="/images/dragon-ess.json"
             atlasSrc="/images/dragon.atlas"
@@ -155,7 +239,7 @@ export const MainApplication = () => {
             y="50%"
           />
         </div>
-        <div className={'relative'} style={{ width: '50%', height: '100%' }}>
+        <div className={'relative'} style={{ width: '50%', height: '400px' }}>
           <SpinePreview
             skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer.json"
             atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer.atlas"
@@ -180,8 +264,7 @@ export const MainApplication = () => {
           />
         </div>
       </div>
-      <div className="w-full h-[600px] flex absolute top-0 left-0 z-80">
-        <div style={{ width: '50%', height: '100%' }}></div>
+      <div className="w-full h-[100px] flex absolute top-0 right-0 z-2080">
         <div className={'relative'} style={{ width: '50%', height: '100%' }}>
           <SpinePreview
             skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer.json"

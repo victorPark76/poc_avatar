@@ -1,7 +1,7 @@
 import { Spine } from '@esotericsoftware/spine-pixi-v8'
 import { extend } from '@pixi/react'
 import { Assets, Container, Graphics, Sprite } from 'pixi.js'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { calculatePositionWithRatio, calculateScale } from '@/utils/aspectRatio'
 
@@ -27,7 +27,7 @@ interface SpinePreviewProps {
   positionType?: 'percentage' | 'absolute' | 'ratio'
 }
 
-export const SpinePreviewContainer = ({
+const SpinePreviewContainer = ({
   skeletonSrc,
   atlasSrc,
   initialAnimation = 'walk',
@@ -78,7 +78,8 @@ export const SpinePreviewContainer = ({
     []
   )
 
-  const updateLayout = useCallback(() => {
+  // 위치만 업데이트하는 함수
+  const updatePosition = useCallback(() => {
     if (!spineRef.current || !containerRef.current || !spineRef.current.parent)
       return
 
@@ -105,37 +106,28 @@ export const SpinePreviewContainer = ({
       spineY = position.y
     }
 
+    // Update spine position only
+    spineRef.current.x = spineX
+    spineRef.current.y = spineY
+  }, [x, y, initialX, initialY, positionType, memoizedBaseSize, parsePosition])
+
+  // 스케일만 업데이트하는 함수
+  const updateScale = useCallback(() => {
+    if (!spineRef.current || !containerRef.current || !spineRef.current.parent)
+      return
+
+    // 화면 크기 가져오기
+    const width = window.innerWidth
+    const height = (width * 9) / 16 // 16:9 비율
+
     // 스케일 계산 (BunnySprite와 동일한 로직)
     const calculatedScale = calculateScale(width, height) * scale
 
-    console.log('Spine 위치 및 스케일:', {
-      x: spineX,
-      y: spineY,
-      scale: calculatedScale,
-      screenSize: { width, height },
-      baseSize: memoizedBaseSize,
-      positionSource:
-        x !== undefined || y !== undefined ? 'x,y props' : 'initialX,initialY',
-      positionValues: { x, y, initialX, initialY, positionType },
-    })
-
-    // Update spine position and scale
-    spineRef.current.x = spineX
-    spineRef.current.y = spineY
+    // Update spine scale only
     spineRef.current.scale.set(calculatedScale)
-  }, [
-    scale,
-    x,
-    y,
-    initialX,
-    initialY,
-    positionType,
-    memoizedBaseSize,
-    parsePosition,
-  ])
+  }, [scale])
 
   const addSpine = useCallback(() => {
-    console.log('containerRef', containerRef.current)
     if (!containerRef.current) return
 
     // 기존 Spine 객체가 있으면 제거
@@ -153,7 +145,6 @@ export const SpinePreviewContainer = ({
         autoUpdate: true,
       })
 
-      console.log('spine', spine)
       spineRef.current = spine
 
       containerRef.current.addChild(spine)
@@ -162,12 +153,54 @@ export const SpinePreviewContainer = ({
       }
 
       // Ensure layout is correct after adding (position and scale)
-      updateLayout()
+      // 직접 호출하여 의존성 문제 방지
+      if (spineRef.current && containerRef.current && spineRef.current.parent) {
+        // 위치 설정
+        const width = window.innerWidth
+        const height = (width * 9) / 16
+
+        let spineX: number
+        let spineY: number
+
+        if (x !== undefined || y !== undefined) {
+          spineX = parsePosition(x, width)
+          spineY = parsePosition(y, height)
+        } else {
+          const position = calculatePositionWithRatio(
+            width,
+            height,
+            { x: initialX, y: initialY, type: positionType },
+            memoizedBaseSize
+          )
+          spineX = position.x
+          spineY = position.y
+        }
+
+        // 스케일 계산
+        const calculatedScale = calculateScale(width, height) * scale
+
+        // 위치와 스케일 설정
+        spineRef.current.x = spineX
+        spineRef.current.y = spineY
+        spineRef.current.scale.set(calculatedScale)
+      }
     } catch (e) {
       console.error('Failed to create Spine:', e)
       setError('Failed to create Spine instance')
     }
-  }, [aliases, autoPlay, initialAnimation, updateLayout])
+  }, [
+    aliases,
+    autoPlay,
+    initialAnimation,
+    x,
+    y,
+    initialX,
+    initialY,
+    positionType,
+    memoizedBaseSize,
+    scale,
+    parsePosition,
+  ])
 
   useEffect(() => {
     let mounted = true
@@ -224,22 +257,31 @@ export const SpinePreviewContainer = ({
     addSpine()
   }, [isReady, addSpine])
 
-  // 화면 크기 변경 감지 및 위치/크기 자동 조정 (BunnySprite와 동일한 로직)
+  // 초기 위치 설정
+  useEffect(() => {
+    if (isReady) {
+      updatePosition()
+    }
+  }, [isReady, updatePosition])
+
+  // 화면 크기 변경 감지 및 스케일 자동 조정
   useEffect(() => {
     const handleResize = () => {
       // Spine 객체가 유효한 경우에만 업데이트
       if (spineRef.current && containerRef.current && spineRef.current.parent) {
-        updateLayout()
+        updateScale()
       }
     }
 
-    updateLayout()
+    if (isReady) {
+      updateScale()
+    }
     window.addEventListener('resize', handleResize)
 
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [updateLayout])
+  }, [isReady, updateScale])
 
   return (
     <>
@@ -269,3 +311,5 @@ export const SpinePreviewContainer = ({
     </>
   )
 }
+
+export default memo(SpinePreviewContainer)

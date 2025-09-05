@@ -48,6 +48,7 @@
     "@mui/material": "^7.3.1",
     "@pixi/react": "^8.0.3",
     "antd": "^5.27.1",
+    "gsap": "^3.13.0",
     "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.2.6",
     "react": "19.2.0-canary-89a803fc-20250828",
