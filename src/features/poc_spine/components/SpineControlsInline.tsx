@@ -15,6 +15,10 @@ export const SpineControlsInline = ({
   )
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set())
   const [isVisible, setIsVisible] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
+  const [currentAnimation, setCurrentAnimation] = useState<
+    'walk' | 'run' | 'idle'
+  >('idle')
 
   // 방향 변경
   const changeDirection = useCallback(
@@ -45,10 +49,26 @@ export const SpineControlsInline = ({
         case 'ArrowLeft':
           event.preventDefault()
           changeDirection('left')
+          // 움직임이 활성화되어 있으면 이전 애니메이션 재시작, 아니면 걷기 시작
+          if (isMoving && currentAnimation !== 'idle') {
+            spineBoy.playAnimation(currentAnimation, true)
+          } else {
+            spineBoy.playAnimation('walk', true)
+            setIsMoving(true)
+            setCurrentAnimation('walk')
+          }
           break
         case 'ArrowRight':
           event.preventDefault()
           changeDirection('right')
+          // 움직임이 활성화되어 있으면 이전 애니메이션 재시작, 아니면 걷기 시작
+          if (isMoving && currentAnimation !== 'idle') {
+            spineBoy.playAnimation(currentAnimation, true)
+          } else {
+            spineBoy.playAnimation('walk', true)
+            setIsMoving(true)
+            setCurrentAnimation('walk')
+          }
           break
         case 'ArrowUp':
           event.preventDefault()
@@ -68,12 +88,28 @@ export const SpineControlsInline = ({
           // A키로 왼쪽
           event.preventDefault()
           changeDirection('left')
+          // 움직임이 활성화되어 있으면 이전 애니메이션 재시작, 아니면 걷기 시작
+          if (isMoving && currentAnimation !== 'idle') {
+            spineBoy.playAnimation(currentAnimation, true)
+          } else {
+            spineBoy.playAnimation('walk', true)
+            setIsMoving(true)
+            setCurrentAnimation('walk')
+          }
           break
         case 'd':
         case 'D':
           // D키로 오른쪽
           event.preventDefault()
           changeDirection('right')
+          // 움직임이 활성화되어 있으면 이전 애니메이션 재시작, 아니면 걷기 시작
+          if (isMoving && currentAnimation !== 'idle') {
+            spineBoy.playAnimation(currentAnimation, true)
+          } else {
+            spineBoy.playAnimation('walk', true)
+            setIsMoving(true)
+            setCurrentAnimation('walk')
+          }
           break
         case 'w':
         case 'W':
@@ -108,7 +144,14 @@ export const SpineControlsInline = ({
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [isSpineReady, spineBoy, changeDirection, pressedKeys])
+  }, [
+    isSpineReady,
+    spineBoy,
+    changeDirection,
+    pressedKeys,
+    isMoving,
+    currentAnimation,
+  ])
 
   if (!isSpineReady || !spineBoy) {
     return null
@@ -404,7 +447,11 @@ export const SpineControlsInline = ({
             >
               {/* 걷기 버튼 */}
               <button
-                onClick={() => spineBoy.playAnimation('walk', true)}
+                onClick={() => {
+                  spineBoy.playAnimation('walk', true)
+                  setIsMoving(true)
+                  setCurrentAnimation('walk')
+                }}
                 style={{
                   width: '40px',
                   height: '40px',
@@ -435,7 +482,11 @@ export const SpineControlsInline = ({
 
               {/* 뛰기 버튼 */}
               <button
-                onClick={() => spineBoy.playAnimation('run', true)}
+                onClick={() => {
+                  spineBoy.playAnimation('run', true)
+                  setIsMoving(true)
+                  setCurrentAnimation('run')
+                }}
                 style={{
                   width: '40px',
                   height: '40px',
@@ -466,7 +517,11 @@ export const SpineControlsInline = ({
 
               {/* 정지 버튼 */}
               <button
-                onClick={() => spineBoy.stopAnimation()}
+                onClick={() => {
+                  spineBoy.stopAnimation()
+                  setIsMoving(false)
+                  setCurrentAnimation('idle')
+                }}
                 style={{
                   width: '40px',
                   height: '40px',

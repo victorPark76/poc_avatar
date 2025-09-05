@@ -10,7 +10,10 @@ interface SpineContainerProps {
   size?: number
 }
 
-export const SpineContainer = ({ onSpineReady }: SpineContainerProps) => {
+export const SpineContainer = ({
+  onSpineReady,
+  size = 1,
+}: SpineContainerProps) => {
   const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
   const [isSpineReady, setIsSpineReady] = useState(false)
   const containerRef = useRef<Container>(null)
@@ -28,18 +31,21 @@ export const SpineContainer = ({ onSpineReady }: SpineContainerProps) => {
         spineView.x = width / 2
         spineView.y = height * 0.9
 
-        // 유틸리티 함수를 사용하여 스케일 계산
-        const scale = calculateScale(width, height)
-        spineView.scale.set(scale)
+        // 유틸리티 함수를 사용하여 스케일 계산하고 size 값 적용
+        const baseScale = calculateScale(width, height)
+        const finalScale = baseScale * size
+        spineView.scale.set(finalScale)
 
         console.log('Spine updated:', {
           x: spineView.x,
           y: spineView.y,
-          scale,
+          baseScale,
+          size,
+          finalScale,
         })
       }
     }
-  }, [spineBoy])
+  }, [spineBoy, size])
 
   // Spine 객체를 컨테이너에 추가하는 함수
   const addSpineToContainer = useCallback(
