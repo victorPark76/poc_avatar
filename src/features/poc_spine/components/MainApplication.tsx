@@ -6,7 +6,8 @@ import { SpineBoy } from '../ts/spine'
 import { BunnySprite } from './BunnySprite'
 import { CloudSprite } from './CloudSprite'
 import { SpineContainer } from './SpineContainer'
-import { SpineControls } from './SpineControls'
+import { SpineControlsInline } from './SpineControlsInline'
+import { SpineControlsSound } from './SpineControlsSound'
 import { SpinePreview } from './SpinePreview'
 import { SpinePreviewContainer } from './SpinePreviewContainer'
 
@@ -20,6 +21,7 @@ export const MainApplication = () => {
   const parentRef = useRef(null)
   const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
   const [isSpineReady, setIsSpineReady] = useState(false)
+  const [spineSize, setSpineSize] = useState(0.3)
 
   // Spine 상태 변경 핸들러
   const handleSpineReady = useCallback(
@@ -74,7 +76,9 @@ export const MainApplication = () => {
 
   return (
     <>
+      <h1 className="text-2xl font-bold text-center">웹 아바타 R&D</h1>
       <div
+        id="main-application"
         ref={parentRef}
         style={{
           width: '100%',
@@ -93,8 +97,8 @@ export const MainApplication = () => {
           antialias={true}
         >
           <BunnySprite
-            initialX={30}
-            initialY={40}
+            initialX={10}
+            initialY={70}
             initialScale={1}
             positionType="percentage"
           />
@@ -109,7 +113,7 @@ export const MainApplication = () => {
           {/* Spine 객체를 여기에 추가 */}
           <SpineContainer
             key={'a'}
-            size={10}
+            size={spineSize}
             initialAnimation="walk"
             onSpineReady={handleSpineReady}
           />
@@ -117,15 +121,28 @@ export const MainApplication = () => {
             skeletonSrc="/images/dragon-ess.json"
             atlasSrc="/images/dragon.atlas"
             initialAnimation="flying"
-            scale={0.3}
+            scale={0.2}
             x="80%"
             y="40%" // 16:9 비율의 기준 크기
           />
+          <SpinePreviewContainer
+            skeletonSrc="/images/dragon-ess.json"
+            atlasSrc="/images/dragon.atlas"
+            initialAnimation="flying"
+            scale={0.3}
+            x="20%"
+            y="50%" // 16:9 비율의 기준 크기
+          />
         </Application>
-
         {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
+        <SpineControlsInline spineBoy={spineBoy} isSpineReady={isSpineReady} />
       </div>
-      <SpineControls spineBoy={spineBoy} isSpineReady={isSpineReady} />
+      <SpineControlsSound
+        spineBoy={spineBoy}
+        isSpineReady={isSpineReady}
+        spineSize={spineSize}
+        onSpineSizeChange={setSpineSize}
+      />
       <div className="flex">
         <div style={{ width: '50%', height: '100%' }}>
           <SpinePreview
@@ -164,23 +181,13 @@ export const MainApplication = () => {
         </div>
       </div>
       <div className="w-full h-[600px] flex absolute top-0 left-0 z-80">
-        <div style={{ width: '50%', height: '100%' }}>
-          <SpinePreview
-            skeletonSrc="/images/dragon-ess.json"
-            atlasSrc="/images/dragon.atlas"
-            initialAnimation="flying"
-            scale={0.8}
-            background="#380000"
-            x="50%"
-            y="50%"
-          />
-        </div>
+        <div style={{ width: '50%', height: '100%' }}></div>
         <div className={'relative'} style={{ width: '50%', height: '100%' }}>
           <SpinePreview
             skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer.json"
             atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer.atlas"
             initialAnimation="btn_unable"
-            scale={3}
+            scale={2}
             x="50%"
             y="50%"
             className={'!absolute top-0 left-0 z-30'}
@@ -191,7 +198,7 @@ export const MainApplication = () => {
             skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.json"
             atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.atlas"
             initialAnimation="enable"
-            scale={3}
+            scale={2}
             x="50%"
             y="50%"
             backgroundAlpha={0}

@@ -5,18 +5,19 @@ import { SpineBoy } from '../ts/spine'
 interface SpineControlsProps {
   spineBoy: SpineBoy | null
   isSpineReady: boolean
+  spineSize: number
+  onSpineSizeChange: (size: number) => void
 }
 
-export const SpineControls = ({
+export const SpineControlsSound = ({
   spineBoy,
   isSpineReady,
+  spineSize,
+  onSpineSizeChange,
 }: SpineControlsProps) => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(false)
   const [masterVolume, setMasterVolume] = useState(0.7)
   const [soundNames, setSoundNames] = useState<string[]>([])
-  const [currentDirection, setCurrentDirection] = useState<'left' | 'right'>(
-    'right'
-  )
 
   // 사운드 상태 업데이트
   useEffect(() => {
@@ -56,12 +57,6 @@ export const SpineControls = ({
     spineBoy.playSound(soundName)
   }
 
-  // 방향 변경
-  const changeDirection = (direction: 'left' | 'right') => {
-    spineBoy.setDirection(direction)
-    setCurrentDirection(direction)
-  }
-
   return (
     <div
       style={{
@@ -75,159 +70,125 @@ export const SpineControls = ({
         minWidth: '200px',
       }}
     >
-      <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
-        Spine Controls:
-      </div>
-
-      {/* 방향 컨트롤 */}
+      {/* 크기 조절 컨트롤 */}
       <div style={{ marginBottom: '12px' }}>
         <div style={{ marginBottom: '4px', fontSize: '12px', color: '#ccc' }}>
-          방향:
+          캐릭터 크기:
         </div>
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-          <button
-            onClick={() => changeDirection('left')}
-            style={{
-              padding: '6px 12px',
-              border: 'none',
-              borderRadius: '4px',
-              background: currentDirection === 'left' ? '#FF5722' : '#757575',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: currentDirection === 'left' ? 'bold' : 'normal',
-            }}
-            onMouseEnter={e => {
-              if (currentDirection !== 'left') {
-                e.currentTarget.style.background = '#616161'
-              }
-            }}
-            onMouseLeave={e => {
-              if (currentDirection !== 'left') {
-                e.currentTarget.style.background = '#757575'
-              }
-            }}
-          >
-            ← 왼쪽
-          </button>
-          <button
-            onClick={() => changeDirection('right')}
-            style={{
-              padding: '6px 12px',
-              border: 'none',
-              borderRadius: '4px',
-              background: currentDirection === 'right' ? '#FF5722' : '#757575',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: currentDirection === 'right' ? 'bold' : 'normal',
-            }}
-            onMouseEnter={e => {
-              if (currentDirection !== 'right') {
-                e.currentTarget.style.background = '#616161'
-              }
-            }}
-            onMouseLeave={e => {
-              if (currentDirection !== 'right') {
-                e.currentTarget.style.background = '#757575'
-              }
-            }}
-          >
-            오른쪽 →
-          </button>
-        </div>
-      </div>
 
-      {/* 애니메이션 컨트롤 */}
-      <div style={{ marginBottom: '12px' }}>
-        <div style={{ marginBottom: '4px', fontSize: '12px', color: '#ccc' }}>
-          애니메이션:
+        {/* 크기 슬라이더 */}
+        <div style={{ marginBottom: '8px' }}>
+          <div style={{ fontSize: '11px', marginBottom: '4px' }}>
+            크기: {Math.round(spineSize * 100)}%
+          </div>
+          <input
+            type="range"
+            min="0.1"
+            max="2.0"
+            step="0.1"
+            value={spineSize}
+            onChange={e => onSpineSizeChange(parseFloat(e.target.value))}
+            style={{
+              width: '100%',
+              height: '4px',
+              background: '#ddd',
+              outline: 'none',
+              borderRadius: '2px',
+            }}
+          />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <button
-            onClick={() => spineBoy.playAnimation('walk', true)}
-            style={{
-              margin: '2px',
-              padding: '6px 12px',
-              border: 'none',
-              borderRadius: '4px',
-              background: '#4CAF50',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '12px',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#45a049'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#4CAF50'
-            }}
-          >
-            걷기
-          </button>
-          <button
-            onClick={() => spineBoy.playAnimation('run', true)}
-            style={{
-              margin: '2px',
-              padding: '6px 12px',
-              border: 'none',
-              borderRadius: '4px',
-              background: '#2196F3',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '12px',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#1976D2'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#2196F3'
-            }}
-          >
-            뛰기
-          </button>
-          <button
-            onClick={() => spineBoy.playAnimation('jump', false)}
-            style={{
-              margin: '2px',
-              padding: '6px 12px',
-              border: 'none',
-              borderRadius: '4px',
-              background: '#FF9800',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '12px',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#F57C00'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#FF9800'
-            }}
-          >
-            점프
-          </button>
-          <button
-            onClick={() => spineBoy.stopAnimation()}
-            style={{
-              margin: '2px',
-              padding: '6px 12px',
-              border: 'none',
-              borderRadius: '4px',
-              background: '#f44336',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '12px',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#d32f2f'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#f44336'
-            }}
-          >
-            멈춤
-          </button>
+
+        {/* 빠른 크기 설정 버튼들 */}
+        <div style={{ marginBottom: '8px' }}>
+          <div style={{ fontSize: '11px', marginBottom: '4px', color: '#ccc' }}>
+            빠른 설정:
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            <button
+              onClick={() => onSpineSizeChange(0.1)}
+              style={{
+                padding: '2px 6px',
+                border: 'none',
+                borderRadius: '3px',
+                background: spineSize === 0.1 ? '#FF5722' : '#757575',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '10px',
+              }}
+            >
+              매우 작게
+            </button>
+            <button
+              onClick={() => onSpineSizeChange(0.3)}
+              style={{
+                padding: '2px 6px',
+                border: 'none',
+                borderRadius: '3px',
+                background: spineSize === 0.3 ? '#FF5722' : '#757575',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '10px',
+              }}
+            >
+              작게
+            </button>
+            <button
+              onClick={() => onSpineSizeChange(0.5)}
+              style={{
+                padding: '2px 6px',
+                border: 'none',
+                borderRadius: '3px',
+                background: spineSize === 0.5 ? '#FF5722' : '#757575',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '10px',
+              }}
+            >
+              중간
+            </button>
+            <button
+              onClick={() => onSpineSizeChange(1.0)}
+              style={{
+                padding: '2px 6px',
+                border: 'none',
+                borderRadius: '3px',
+                background: spineSize === 1.0 ? '#FF5722' : '#757575',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '10px',
+              }}
+            >
+              기본
+            </button>
+            <button
+              onClick={() => onSpineSizeChange(1.5)}
+              style={{
+                padding: '2px 6px',
+                border: 'none',
+                borderRadius: '3px',
+                background: spineSize === 1.5 ? '#FF5722' : '#757575',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '10px',
+              }}
+            >
+              크게
+            </button>
+            <button
+              onClick={() => onSpineSizeChange(2.0)}
+              style={{
+                padding: '2px 6px',
+                border: 'none',
+                borderRadius: '3px',
+                background: spineSize === 2.0 ? '#FF5722' : '#757575',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '10px',
+              }}
+            >
+              매우 크게
+            </button>
+          </div>
         </div>
       </div>
 

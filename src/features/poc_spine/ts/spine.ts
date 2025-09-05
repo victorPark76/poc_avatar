@@ -7,6 +7,7 @@ export class SpineBoy {
   private view: Container
   private spine: Spine
   private soundEventMap: Map<string, string> = new Map() // 애니메이션 이벤트 -> 사운드 매핑
+  private lastAnimation: { name: string; loop: boolean } | null = null // 이전 애니메이션 저장
 
   constructor() {
     // Create the main view.
@@ -45,11 +46,19 @@ export class SpineBoy {
     track: number = 0
   ) {
     if (this.spine && this.spine.state) {
+      // 점프가 아닌 애니메이션은 이전 애니메이션으로 저장
+      if (animationName !== 'jump') {
+        this.lastAnimation = { name: animationName, loop }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - Spine 라이브러리 타입 정의 문제
       const result = this.spine.state.setAnimation(track, animationName, loop)
 
-      // 점프 애니메이션일 때 직접 사운드 재생
+      // 점프 애니메이션일 때 완료 후 이전 애니메이션 복원 설정
       if (animationName === 'jump') {
         this.playSound('jump_pulse')
+        this.setupJumpCompleteHandler(track)
       }
 
       return result
@@ -61,6 +70,35 @@ export class SpineBoy {
   stopAnimation(track: number = 0) {
     if (this.spine && this.spine.state) {
       this.spine.state.clearTrack(track)
+    }
+  }
+
+  // 점프 애니메이션 완료 핸들러 설정
+  private setupJumpCompleteHandler(track: number) {
+    if (this.spine && this.spine.state) {
+      // 점프 애니메이션 완료 감지
+      const jumpCompleteListener = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        complete: (entry: any) => {
+          // 점프 애니메이션이 완료되었을 때
+          if (entry.animation && entry.animation.name === 'jump') {
+            // 이전 애니메이션이 있으면 복원
+            if (this.lastAnimation) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore - Spine 라이브러리 타입 정의 문제
+              this.spine.state.setAnimation(
+                track,
+                this.lastAnimation.name,
+                this.lastAnimation.loop
+              )
+            }
+            // 리스너 제거
+            this.spine.state.removeListener(jumpCompleteListener)
+          }
+        },
+      }
+
+      this.spine.state.addListener(jumpCompleteListener)
     }
   }
 
@@ -98,6 +136,22 @@ export class SpineBoy {
       }
     }
     return undefined
+  }
+
+  // Method to set direction (flip horizontally)
+  setDirection(direction: 'left' | 'right') {
+    if (this.spine && this.spine.skeleton) {
+      const scaleX = direction === 'left' ? -1 : 1
+      this.spine.skeleton.scaleX = scaleX
+    }
+  }
+
+  // Method to get current direction
+  getDirection(): 'left' | 'right' {
+    if (this.spine && this.spine.skeleton) {
+      return this.spine.skeleton.scaleX < 0 ? 'left' : 'right'
+    }
+    return 'right'
   }
 
   // 사운드 이벤트 리스너 설정
