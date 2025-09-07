@@ -180,6 +180,32 @@ export const MainApplication = () => {
 
         {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
         <SpineControlsInline spineBoy={spineBoy} isSpineReady={isSpineReady} />
+        <div className="w-[100px] h-[100px] absolute top-0 right-0 z-2080">
+          <div className={'relative'} style={{ width: '100%', height: '100%' }}>
+            <SpinePreview
+              skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer.json"
+              atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer.atlas"
+              initialAnimation="btn_unable"
+              scale={3}
+              x="0"
+              y="0"
+              className={'!absolute top-0 left-0 z-30'}
+              background="transparent"
+              backgroundAlpha={0}
+            />
+            <SpinePreview
+              skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.json"
+              atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.atlas"
+              initialAnimation="enable"
+              scale={3}
+              x="0"
+              y="0"
+              backgroundAlpha={0}
+              background="transparent"
+              className={'!absolute top-0 left-0 z-50'}
+            />
+          </div>
+        </div>
       </div>
       <div className=" relative top-4 right-4 z-40000">
         <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
@@ -256,32 +282,6 @@ export const MainApplication = () => {
             atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.atlas"
             initialAnimation="enable"
             scale={3}
-            x="50%"
-            y="50%"
-            backgroundAlpha={0}
-            background="transparent"
-            className={'!absolute top-0 left-0 z-50'}
-          />
-        </div>
-      </div>
-      <div className="w-full h-[100px] flex absolute top-0 right-0 z-2080">
-        <div className={'relative'} style={{ width: '50%', height: '100%' }}>
-          <SpinePreview
-            skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer.json"
-            atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer.atlas"
-            initialAnimation="btn_unable"
-            scale={2}
-            x="50%"
-            y="50%"
-            className={'!absolute top-0 left-0 z-30'}
-            background="transparent"
-            backgroundAlpha={0}
-          />
-          <SpinePreview
-            skeletonSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.json"
-            atlasSrc="/effects/spine/microphone/ui_btn_speaking_timer_gauge.atlas"
-            initialAnimation="enable"
-            scale={2}
             x="50%"
             y="50%"
             backgroundAlpha={0}
