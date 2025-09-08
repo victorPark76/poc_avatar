@@ -12,8 +12,9 @@ export const LazyPixiContainer = () => {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-96">
-          <Spin size="large" tip="PixiJS 그래픽 엔진 로딩 중..." />
+        <div className="flex flex-col items-center justify-center h-96">
+          <Spin size="large" />
+          <p className="mt-4 text-gray-600">PixiJS 그래픽 엔진 로딩 중...</p>
         </div>
       }
     >

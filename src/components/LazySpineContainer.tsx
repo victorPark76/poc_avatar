@@ -2,10 +2,8 @@ import { Spin } from 'antd'
 import { lazy, Suspense } from 'react'
 
 // Spine 컨테이너를 동적으로 로딩
-const SpineContainer = lazy(() =>
-  import('@/features/poc_spine/components/SpineContainer').then(module => ({
-    default: module.SpineContainer,
-  }))
+const SpineContainer = lazy(
+  () => import('@/features/poc_spine/components/SpineContainer')
 )
 
 interface LazySpineContainerProps {
