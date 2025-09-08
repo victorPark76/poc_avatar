@@ -3,6 +3,7 @@ import { Container, Graphics, Sprite } from 'pixi.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { adjustContainerToAspectRatio } from '../../../utils/aspectRatio'
 import { SpineBoy } from '../ts/spine'
+import { BunnyControls } from './BunnyControls'
 import { BunnySprite, type BunnySpriteRef } from './BunnySprite'
 import { CloudSprite } from './CloudSprite'
 import SpineContainer from './SpineContainer'
@@ -254,70 +255,20 @@ export const MainApplication = () => {
             containerSize={containerSize}
           />
         </Application>
-        <div
-          id="bunny-btn-view"
-          className="absolute z-40000"
-          style={{
-            position: 'absolute',
-            left: `${bunnyPosition.x}%`,
-            top: `${bunnyPosition.y + 5}%`, // bunny 캐릭터 발쪽에 위치하도록 5% 오프셋 추가
-            transform: 'translateX(-50%)', // 중앙 정렬을 위한 변환
-          }}
-        >
-          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-            <div className="flex  gap-[3px]">
-              <button
-                id="bunny-btn-view-toggle"
-                onClick={() => {
-                  if (!isDragging) {
-                    setBunnyBtnView(!bunnyBtnView)
-                  }
-                }}
-                onMouseDown={handleDragStart}
-                className={`text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors cursor-move select-none ${
-                  isDragging
-                    ? 'bg-blue-700 shadow-lg scale-105'
-                    : 'bg-blue-500 hover:bg-blue-600'
-                }`}
-                style={{ userSelect: 'none' }}
-              >
-                {bunnyBtnView ? 'Hide' : 'Show'}
-              </button>
-              {bunnyBtnView && (
-                <>
-                  <button
-                    onClick={moveBunnyLeft}
-                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
-                  >
-                    ←
-                  </button>
-                  <button
-                    onClick={moveBunnyUp}
-                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={moveBunnyDown}
-                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={moveBunnyRight}
-                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
-                  >
-                    →
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* 이동 버튼 UI */}
-
         {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
         <SpineControlsInline spineBoy={spineBoy} isSpineReady={isSpineReady} />
+        {/* 이동 버튼 UI - 분리된 컴포넌트 사용 */}
+        <BunnyControls
+          bunnyPosition={bunnyPosition}
+          bunnyBtnView={bunnyBtnView}
+          isDragging={isDragging}
+          onToggleView={() => setBunnyBtnView(!bunnyBtnView)}
+          onDragStart={handleDragStart}
+          onMoveLeft={moveBunnyLeft}
+          onMoveUp={moveBunnyUp}
+          onMoveDown={moveBunnyDown}
+          onMoveRight={moveBunnyRight}
+        />
         <div className="w-[100px] h-[100px] absolute top-0 right-0 z-2080">
           <div className={'relative'} style={{ width: '100%', height: '100%' }}>
             <SpinePreview
