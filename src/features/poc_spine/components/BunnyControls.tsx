@@ -5,7 +5,7 @@ interface BunnyControlsProps {
   bunnyBtnView: boolean
   isDragging: boolean
   onToggleView: () => void
-  onDragStart: (e: React.MouseEvent) => void
+  onDragStart: (e: React.MouseEvent | React.TouchEvent) => void
   onMoveLeft: () => void
   onMoveUp: () => void
   onMoveDown: () => void
@@ -44,12 +44,13 @@ export const BunnyControls: React.FC<BunnyControlsProps> = ({
               }
             }}
             onMouseDown={onDragStart}
+            onTouchStart={onDragStart}
             className={`text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors cursor-move select-none ${
               isDragging
                 ? 'bg-blue-700 shadow-lg scale-105'
                 : 'bg-blue-500 hover:bg-blue-600'
             }`}
-            style={{ userSelect: 'none' }}
+            style={{ userSelect: 'none', touchAction: 'none' }}
           >
             {bunnyBtnView ? 'Hide' : 'Show'}
           </button>
@@ -58,24 +59,28 @@ export const BunnyControls: React.FC<BunnyControlsProps> = ({
               <button
                 onClick={onMoveLeft}
                 className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                style={{ touchAction: 'manipulation' }}
               >
                 ←
               </button>
               <button
                 onClick={onMoveUp}
                 className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                style={{ touchAction: 'manipulation' }}
               >
                 ↑
               </button>
               <button
                 onClick={onMoveDown}
                 className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                style={{ touchAction: 'manipulation' }}
               >
                 ↓
               </button>
               <button
                 onClick={onMoveRight}
                 className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                style={{ touchAction: 'manipulation' }}
               >
                 →
               </button>

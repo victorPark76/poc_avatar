@@ -78,34 +78,44 @@ export const MainApplication = () => {
     []
   )
 
-  // 드래그 시작 핸들러
+  // 드래그 시작 핸들러 (마우스와 터치 모두 지원)
   const handleDragStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault()
       e.stopPropagation()
       setIsDragging(true)
       const parentElement = parentRef.current as unknown as HTMLElement
+
+      // 마우스와 터치 이벤트 모두 처리
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
       setDragStart({
         x:
-          e.clientX -
+          clientX -
           (bunnyPosition.x / 100) * (parentElement?.clientWidth || 800),
         y:
-          e.clientY -
+          clientY -
           (bunnyPosition.y / 100) * (parentElement?.clientHeight || 450),
       })
     },
     [bunnyPosition]
   )
 
-  // 드래그 중 핸들러
+  // 드래그 중 핸들러 (마우스와 터치 모두 지원)
   const handleDragMove = useCallback(
-    (e: MouseEvent) => {
+    (e: MouseEvent | TouchEvent) => {
       if (!isDragging || !parentRef.current) return
 
       const parentElement = parentRef.current as unknown as HTMLElement
       const parentRect = parentElement.getBoundingClientRect()
-      const newX = ((e.clientX - dragStart.x) / parentRect.width) * 100
-      const newY = ((e.clientY - dragStart.y) / parentRect.height) * 100
+
+      // 마우스와 터치 이벤트 모두 처리
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+      const newX = ((clientX - dragStart.x) / parentRect.width) * 100
+      const newY = ((clientY - dragStart.y) / parentRect.height) * 100
 
       // 화면 경계 내에서만 이동 가능하도록 제한
       const clampedX = Math.max(0, Math.min(100, newX))
@@ -126,15 +136,19 @@ export const MainApplication = () => {
     setIsDragging(false)
   }, [])
 
-  // 마우스 이벤트 리스너 등록
+  // 마우스와 터치 이벤트 리스너 등록
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleDragMove)
       document.addEventListener('mouseup', handleDragEnd)
+      document.addEventListener('touchmove', handleDragMove, { passive: false })
+      document.addEventListener('touchend', handleDragEnd)
 
       return () => {
         document.removeEventListener('mousemove', handleDragMove)
         document.removeEventListener('mouseup', handleDragEnd)
+        document.removeEventListener('touchmove', handleDragMove)
+        document.removeEventListener('touchend', handleDragEnd)
       }
     }
   }, [isDragging, handleDragMove, handleDragEnd])
