@@ -27,6 +27,10 @@ export const MainApplication = () => {
   const [bunnyBtnView, setBunnyBtnView] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [containerSize, setContainerSize] = useState({
+    width: 800,
+    height: 450,
+  })
 
   // baseSize를 메모이제이션하여 불필요한 재렌더링 방지
   const baseSize = useMemo(() => ({ width: 800, height: 450 }), [])
@@ -141,6 +145,12 @@ export const MainApplication = () => {
 
       // 유틸리티 함수를 사용하여 컨테이너 크기 조정
       adjustContainerToAspectRatio(parent)
+
+      // 컨테이너 크기 업데이트
+      setContainerSize({
+        width: parent.clientWidth,
+        height: parent.clientHeight,
+      })
     }
   }, [])
 
@@ -205,6 +215,7 @@ export const MainApplication = () => {
               { x: 200, y: 35, speed: 0.5, scale: 0.05, alpha: 0, layer: 2 },
             ]}
             positionType="percentage"
+            baseSize={containerSize}
           />
           {/* Spine 객체를 여기에 추가 */}
           <SpineContainer
@@ -212,6 +223,7 @@ export const MainApplication = () => {
             size={spineSize}
             initialAnimation="walk"
             onSpineReady={handleSpineReady}
+            containerSize={containerSize}
           />
           <SpinePreviewContainer
             skeletonSrc="/images/dragon-ess.json"
@@ -220,6 +232,7 @@ export const MainApplication = () => {
             scale={0.2}
             x="80%"
             y="40%" // 16:9 비율의 기준 크기
+            baseSize={containerSize}
           />
           <SpinePreviewContainer
             skeletonSrc="/images/dragon-ess.json"
@@ -228,6 +241,7 @@ export const MainApplication = () => {
             scale={0.3}
             x="20%"
             y="50%" // 16:9 비율의 기준 크기
+            baseSize={containerSize}
           />
           <BunnySprite
             ref={bunnyRef}
@@ -237,6 +251,7 @@ export const MainApplication = () => {
             positionType="percentage"
             baseSize={baseSize}
             onPositionChange={handleBunnyPositionChange}
+            containerSize={containerSize}
           />
         </Application>
         <div
