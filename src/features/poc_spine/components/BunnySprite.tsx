@@ -28,6 +28,7 @@ export interface BunnySpriteProps {
   positionType?: 'percentage' | 'absolute' | 'ratio'
   baseSize?: { width: number; height: number }
   onPositionChange?: (position: { x: number; y: number }) => void
+  containerSize?: { width: number; height: number }
 }
 
 export const BunnySprite = forwardRef<BunnySpriteRef, BunnySpriteProps>(
@@ -39,6 +40,7 @@ export const BunnySprite = forwardRef<BunnySpriteRef, BunnySpriteProps>(
       positionType = 'percentage',
       baseSize = { width: 800, height: 450 },
       onPositionChange,
+      containerSize,
     },
     ref
   ) => {
@@ -114,8 +116,8 @@ export const BunnySprite = forwardRef<BunnySpriteRef, BunnySpriteProps>(
 
     // 위치만 업데이트하는 함수 (percentagePosition 변경 시에만)
     const updatePosition = useCallback(() => {
-      const width = window.innerWidth
-      const height = (width * 9) / 16 // 16:9 비율
+      const width = containerSize?.width || window.innerWidth
+      const height = containerSize?.height || (window.innerWidth * 9) / 16 // 16:9 비율
 
       // 위치 계산 - percentagePosition 사용
       const position = calculatePositionWithRatio(
@@ -135,17 +137,23 @@ export const BunnySprite = forwardRef<BunnySpriteRef, BunnySpriteProps>(
       if (onPositionChange) {
         onPositionChange(percentagePosition)
       }
-    }, [percentagePosition, positionType, memoizedBaseSize, onPositionChange])
+    }, [
+      percentagePosition,
+      positionType,
+      memoizedBaseSize,
+      onPositionChange,
+      containerSize,
+    ])
 
     // 스케일만 업데이트하는 함수 (화면 크기 변경 시에만)
     const updateScale = useCallback(() => {
-      const width = window.innerWidth
-      const height = (width * 9) / 16 // 16:9 비율
+      const width = containerSize?.width || window.innerWidth
+      const height = containerSize?.height || (window.innerWidth * 9) / 16 // 16:9 비율
 
       // 스케일 계산
       const scale = calculateScale(width, height) * initialScale
       setCurrentScale(scale)
-    }, [initialScale])
+    }, [initialScale, containerSize])
 
     // 위치 변경 시에만 위치 업데이트
     useEffect(() => {

@@ -8,9 +8,14 @@ interface SpineContainerProps {
   onSpineReady?: (spineBoy: SpineBoy | null, isReady: boolean) => void
   initialAnimation?: string
   size?: number
+  containerSize?: { width: number; height: number }
 }
 
-const SpineContainer = ({ onSpineReady, size = 1 }: SpineContainerProps) => {
+const SpineContainer = ({
+  onSpineReady,
+  size = 1,
+  containerSize,
+}: SpineContainerProps) => {
   const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
   const [isSpineReady, setIsSpineReady] = useState(false)
   const containerRef = useRef<Container>(null)
@@ -21,8 +26,8 @@ const SpineContainer = ({ onSpineReady, size = 1 }: SpineContainerProps) => {
       const spineView = spineBoy.getView()
       if (spineView) {
         // 화면 크기 가져오기
-        const width = window.innerWidth
-        const height = (width * 9) / 16 // 16:9 비율
+        const width = containerSize?.width || window.innerWidth
+        const height = containerSize?.height || (window.innerWidth * 9) / 16 // 16:9 비율
 
         // Spine 객체를 화면 중앙 하단에 위치
         spineView.x = width / 2
@@ -34,7 +39,7 @@ const SpineContainer = ({ onSpineReady, size = 1 }: SpineContainerProps) => {
         spineView.scale.set(finalScale)
       }
     }
-  }, [spineBoy, size])
+  }, [spineBoy, size, containerSize])
 
   // Spine 객체를 컨테이너에 추가하는 함수
   const addSpineToContainer = useCallback(
