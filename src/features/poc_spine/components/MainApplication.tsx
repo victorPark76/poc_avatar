@@ -24,6 +24,9 @@ export const MainApplication = () => {
   const [isSpineReady, setIsSpineReady] = useState(false)
   const [spineSize, setSpineSize] = useState(0.3)
   const [bunnyPosition, setBunnyPosition] = useState({ x: 10, y: 70 })
+  const [bunnyBtnView, setBunnyBtnView] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
   // baseSize를 메모이제이션하여 불필요한 재렌더링 방지
   const baseSize = useMemo(() => ({ width: 800, height: 450 }), [])
@@ -70,6 +73,67 @@ export const MainApplication = () => {
     []
   )
 
+  // 드래그 시작 핸들러
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragging(true)
+      const parentElement = parentRef.current as unknown as HTMLElement
+      setDragStart({
+        x:
+          e.clientX -
+          (bunnyPosition.x / 100) * (parentElement?.clientWidth || 800),
+        y:
+          e.clientY -
+          (bunnyPosition.y / 100) * (parentElement?.clientHeight || 450),
+      })
+    },
+    [bunnyPosition]
+  )
+
+  // 드래그 중 핸들러
+  const handleDragMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !parentRef.current) return
+
+      const parentElement = parentRef.current as unknown as HTMLElement
+      const parentRect = parentElement.getBoundingClientRect()
+      const newX = ((e.clientX - dragStart.x) / parentRect.width) * 100
+      const newY = ((e.clientY - dragStart.y) / parentRect.height) * 100
+
+      // 화면 경계 내에서만 이동 가능하도록 제한
+      const clampedX = Math.max(0, Math.min(100, newX))
+      const clampedY = Math.max(0, Math.min(100, newY))
+
+      setBunnyPosition({ x: clampedX, y: clampedY })
+
+      // bunnyRef를 통해 실제 캐릭터 위치도 업데이트
+      if (bunnyRef.current) {
+        bunnyRef.current.setPosition(clampedX, clampedY)
+      }
+    },
+    [isDragging, dragStart]
+  )
+
+  // 드래그 종료 핸들러
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  // 마우스 이벤트 리스너 등록
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDragMove)
+      document.addEventListener('mouseup', handleDragEnd)
+
+      return () => {
+        document.removeEventListener('mousemove', handleDragMove)
+        document.removeEventListener('mouseup', handleDragEnd)
+      }
+    }
+  }, [isDragging, handleDragMove, handleDragEnd])
+
   // 부모 컨테이너의 높이를 16:9 비율로 설정하는 함수를 useCallback으로 메모이제이션
   const updateContainerHeight = useCallback(() => {
     if (parentRef.current) {
@@ -110,7 +174,7 @@ export const MainApplication = () => {
       clearTimeout(resizeTimeout)
       resizeObserver.disconnect()
     }
-  }, []) // updateContainerHeight 의존성 제거
+  }, [updateContainerHeight])
 
   return (
     <>
@@ -134,15 +198,6 @@ export const MainApplication = () => {
           autoDensity={true}
           antialias={true}
         >
-          <BunnySprite
-            ref={bunnyRef}
-            initialX={10}
-            initialY={70}
-            initialScale={1}
-            positionType="percentage"
-            baseSize={baseSize}
-            onPositionChange={handleBunnyPositionChange}
-          />
           <CloudSprite
             clouds={[
               { x: 0, y: 15, speed: 1.2, scale: 0.3, alpha: 0, layer: 0 },
@@ -174,8 +229,76 @@ export const MainApplication = () => {
             x="20%"
             y="50%" // 16:9 비율의 기준 크기
           />
+          <BunnySprite
+            ref={bunnyRef}
+            initialX={10}
+            initialY={70}
+            initialScale={1}
+            positionType="percentage"
+            baseSize={baseSize}
+            onPositionChange={handleBunnyPositionChange}
+          />
         </Application>
-
+        <div
+          id="bunny-btn-view"
+          className="absolute z-40000"
+          style={{
+            position: 'absolute',
+            left: `${bunnyPosition.x}%`,
+            top: `${bunnyPosition.y + 5}%`, // bunny 캐릭터 발쪽에 위치하도록 5% 오프셋 추가
+            transform: 'translateX(-50%)', // 중앙 정렬을 위한 변환
+          }}
+        >
+          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+            <div className="flex  gap-[3px]">
+              <button
+                id="bunny-btn-view-toggle"
+                onClick={() => {
+                  if (!isDragging) {
+                    setBunnyBtnView(!bunnyBtnView)
+                  }
+                }}
+                onMouseDown={handleDragStart}
+                className={`text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors cursor-move select-none ${
+                  isDragging
+                    ? 'bg-blue-700 shadow-lg scale-105'
+                    : 'bg-blue-500 hover:bg-blue-600'
+                }`}
+                style={{ userSelect: 'none' }}
+              >
+                {bunnyBtnView ? 'Hide' : 'Show'}
+              </button>
+              {bunnyBtnView && (
+                <>
+                  <button
+                    onClick={moveBunnyLeft}
+                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={moveBunnyUp}
+                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={moveBunnyDown}
+                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={moveBunnyRight}
+                    className="bg-blue-500 hover:bg-blue-600 text-white h-[42px] w-[42px] rounded text-sm font-medium transition-colors"
+                  >
+                    →
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
         {/* 이동 버튼 UI */}
 
         {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
@@ -204,46 +327,6 @@ export const MainApplication = () => {
               background="transparent"
               className={'!absolute top-0 left-0 z-50'}
             />
-          </div>
-        </div>
-      </div>
-      <div className=" relative top-4 right-4 z-40000">
-        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-          <h3 className="text-sm font-semibold mb-3 text-gray-700">
-            캐릭터 이동
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            <div></div>
-            <button
-              onClick={moveBunnyUp}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
-            >
-              ↑
-            </button>
-            <div></div>
-            <button
-              onClick={moveBunnyLeft}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
-            >
-              ←
-            </button>
-            <div className="bg-gray-200 rounded px-3 py-2 text-xs text-center">
-              {Math.round(bunnyPosition.x)}%, {Math.round(bunnyPosition.y)}%
-            </div>
-            <button
-              onClick={moveBunnyRight}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
-            >
-              →
-            </button>
-            <div></div>
-            <button
-              onClick={moveBunnyDown}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
-            >
-              ↓
-            </button>
-            <div></div>
           </div>
         </div>
       </div>

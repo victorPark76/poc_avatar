@@ -18,6 +18,7 @@ export interface BunnySpriteRef {
   moveUp: () => void
   moveDown: () => void
   getPosition: () => { x: number; y: number }
+  setPosition: (x: number, y: number) => void
 }
 
 export interface BunnySpriteProps {
@@ -105,6 +106,12 @@ export const BunnySprite = forwardRef<BunnySpriteRef, BunnySpriteProps>(
       animateToPosition({ x: percentagePosition.x, y: newY })
     }, [animateToPosition, percentagePosition])
 
+    const setPosition = useCallback((x: number, y: number) => {
+      const clampedX = Math.max(0, Math.min(100, x))
+      const clampedY = Math.max(0, Math.min(100, y))
+      setPercentagePosition({ x: clampedX, y: clampedY })
+    }, [])
+
     // 위치만 업데이트하는 함수 (percentagePosition 변경 시에만)
     const updatePosition = useCallback(() => {
       const width = window.innerWidth
@@ -177,8 +184,9 @@ export const BunnySprite = forwardRef<BunnySpriteRef, BunnySpriteProps>(
         moveUp,
         moveDown,
         getPosition: () => percentagePosition,
+        setPosition,
       }),
-      [moveLeft, moveRight, moveUp, moveDown, percentagePosition]
+      [moveLeft, moveRight, moveUp, moveDown, percentagePosition, setPosition]
     )
 
     return (
