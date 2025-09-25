@@ -2,12 +2,9 @@ import { Application, extend } from '@pixi/react'
 import { Container, Graphics, Sprite } from 'pixi.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { adjustContainerToAspectRatio } from '../../../utils/aspectRatio'
-import { SpineBoy } from '../ts/spine'
 import { BunnyControls } from './BunnyControls'
 import { BunnySprite, type BunnySpriteRef } from './BunnySprite'
 import { CloudSprite } from './CloudSprite'
-import { SpineControlsInline } from './SpineControlsInline'
-import { SpineControlsSound } from './SpineControlsSound'
 import { SpinePreview } from './SpinePreview'
 import SpinePreviewContainer from './SpinePreviewContainer'
 
@@ -20,9 +17,6 @@ extend({
 export const MainApplication = () => {
   const parentRef = useRef(null)
   const bunnyRef = useRef<BunnySpriteRef>(null)
-  const [spineBoy, setSpineBoy] = useState<SpineBoy | null>(null)
-  const [isSpineReady, setIsSpineReady] = useState(false)
-  const [spineSize, setSpineSize] = useState(0.3)
   const [bunnyPosition, setBunnyPosition] = useState({ x: 10, y: 70 })
   const [bunnyBtnView, setBunnyBtnView] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -34,15 +28,6 @@ export const MainApplication = () => {
 
   // baseSize를 메모이제이션하여 불필요한 재렌더링 방지
   const baseSize = useMemo(() => ({ width: 800, height: 450 }), [])
-
-  // Spine 상태 변경 핸들러
-  const handleSpineReady = useCallback(
-    (spineBoy: SpineBoy | null, isReady: boolean) => {
-      setSpineBoy(spineBoy)
-      setIsSpineReady(isReady)
-    },
-    []
-  )
 
   // 버니 이동 함수들
   const moveBunnyLeft = useCallback(() => {
@@ -268,9 +253,6 @@ export const MainApplication = () => {
             containerSize={containerSize}
           />
         </Application>
-        {/* Spine 제어 UI - Pixi.js Application 외부에 렌더링 */}
-        <SpineControlsInline spineBoy={spineBoy} isSpineReady={isSpineReady} />
-        {/* 이동 버튼 UI - 분리된 컴포넌트 사용 */}
         <BunnyControls
           bunnyPosition={bunnyPosition}
           bunnyBtnView={bunnyBtnView}
@@ -309,12 +291,6 @@ export const MainApplication = () => {
           </div>
         </div>
       </div>
-      <SpineControlsSound
-        spineBoy={spineBoy}
-        isSpineReady={isSpineReady}
-        spineSize={spineSize}
-        onSpineSizeChange={setSpineSize}
-      />
       <div className="flex" style={{ minHeight: '400px' }}>
         <div style={{ width: '50%', height: '400px', position: 'relative' }}>
           <SpinePreview
