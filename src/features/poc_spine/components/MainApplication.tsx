@@ -6,7 +6,6 @@ import { SpineBoy } from '../ts/spine'
 import { BunnyControls } from './BunnyControls'
 import { BunnySprite, type BunnySpriteRef } from './BunnySprite'
 import { CloudSprite } from './CloudSprite'
-import SpineContainer from './SpineContainer'
 import { SpineControlsInline } from './SpineControlsInline'
 import { SpineControlsSound } from './SpineControlsSound'
 import { SpinePreview } from './SpinePreview'
@@ -233,14 +232,14 @@ export const MainApplication = () => {
             baseSize={containerSize}
           />
           {/* Spine 객체를 여기에 추가 */}
-          <SpineContainer
+          {/* <SpineContainer
             key={'a'}
             size={spineSize}
             initialAnimation="walk"
             onSpineReady={handleSpineReady}
             containerSize={containerSize}
-          />
-          <SpinePreviewContainer
+          /> */}
+          {/* <SpinePreviewContainer
             skeletonSrc="/images/dragon-ess.json"
             atlasSrc="/images/dragon.atlas"
             initialAnimation="flying"
@@ -248,14 +247,14 @@ export const MainApplication = () => {
             x="80%"
             y="40%" // 16:9 비율의 기준 크기
             baseSize={containerSize}
-          />
+          /> */}
           <SpinePreviewContainer
-            skeletonSrc="/images/dragon-ess.json"
-            atlasSrc="/images/dragon.atlas"
-            initialAnimation="flying"
-            scale={0.3}
-            x="20%"
-            y="50%" // 16:9 비율의 기준 크기
+            skeletonSrc="/images/qple_boy/Casual_A.json"
+            atlasSrc="/images/qple_boy/Casual_A.atlas"
+            initialAnimation="animation"
+            scale={0.2}
+            x="50%"
+            y="90%" // 16:9 비율의 기준 크기
             baseSize={containerSize}
           />
           <BunnySprite
